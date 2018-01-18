@@ -1,0 +1,11 @@
+---
+## Shut down search engine application from remote.
+
+- hosts: all
+  strategy: debug
+  remote_user: root
+  connection: ssh
+
+  tasks:
+    - name: Shut down search engine.
+      shell: /home/searcher/ops/shutdown.sh >> /tmp/search_engine_shut_down_result

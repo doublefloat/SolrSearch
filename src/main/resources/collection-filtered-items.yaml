@@ -1,0 +1,3 @@
+collection:
+  filteredItems:
+    log-production: _version_,_root_,cat,category,comments,content,content_type,description,features,inStock,keywords,includes,keywords,links,manu,manu_exact

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hypers.history.dao.HistoryStore">
+  <insert id="saveRecord" parameterType="com.hypers.history.model.RecordEntity">
+    insert into history(id,user_id,query,collection,time_range,fields,filters,page,page_size,
+        status,default_search,search_name,time_type,aggregate_field,updated_time,created_time)
+    values(default,#{userId},#{query},#{collection},#{timeRange},#{fields},#{filters},#{page},#{pageSize},
+        'ACTIVE',#{defaultSearch},#{searchName},#{timeType},#{aggregateField},CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+  </insert>
+
+  <select id="selectRecords" parameterType="com.hypers.history.model.request.RetrieveParas"
+    resultType="com.hypers.history.model.response.HistoryRecord">
+    select id,query,time_range as timeRange,time_type as timeType, filters,fields,search_name as searchName ,
+      page,page_size as pageSize,default_search as defaultSearch,collection,aggregate_field as aggregateField
+    from history
+    where user_id=#{userId} and status=#{status}
+    order by default_search desc,search_name
+    limit #{offset},#{num}
+  </select>
+
+  <update id="updateRecord" parameterType="com.hypers.history.model.RecordEntity">
+    update history
+    <set>
+      <if test="searchName != null">search_name=#{searchName},</if>
+      <if test="query != null">query=#{query},</if>
+      <if test="collection != null">collection=#{collection},</if>
+      <if test="timeRange != null">time_range=#{timeRange},</if>
+      <if test="timeType != null">time_type=#{timeType},</if>
+      <if test="filters != null">filters=#{filters},</if>
+      <if test="fields != null">fields=#{fields},</if>
+      <if test="page != null">page=#{page},</if>
+      <if test="pageSize != null">page_size=#{pageSize},</if>
+      <if test="aggregateField != null">aggregate_field=#{aggregateField}</if>
+    </set>
+    where id=#{id}
+  </update>
+
+  <update id="setDeleted" parameterType="long">
+    update history set status='DELETE'
+    where id=#{id}
+  </update>
+
+  <update id="resetDefaultSearch" parameterType="com.hypers.history.model.request.RetrieveParas">
+    <selectKey keyProperty="userId" resultType="long"
+      order="BEFORE">
+      select user_id as userId from history where id =#{id}
+    </selectKey>
+    update history
+    set default_search=false
+    where user_id=#{userId} and default_search=true;
+  </update>
+
+  <update id="setDefault" parameterType="long">
+    update history
+    set default_search=true
+    where id=#{id}
+  </update>
+
+  <delete id="deleteById" parameterType="long">
+    delete from history
+    where id=#{id}
+  </delete>
+
+  <delete id="deleteByStatus" parameterType="com.hypers.history.enums.EnumsRecordStatus">
+    delete from history
+    where status=#{status}
+  </delete>
+
+  <update id="setIsDefaultFalse" parameterType="long">
+    update history
+    set default_search=false
+    where user_id=#{userId} and default_search=true;
+  </update>
+
+  <delete id="deleteByUserId" parameterType="long">
+    delete from history
+    where user_id=#{userId}
+  </delete>
+
+</mapper>

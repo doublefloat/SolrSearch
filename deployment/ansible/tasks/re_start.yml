@@ -1,0 +1,5 @@
+---
+### Re start up search engine application from remote.
+
+- name: Re start up search engine.
+  command: sh /home/searcher/app/restart.sh

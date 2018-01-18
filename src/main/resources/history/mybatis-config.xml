@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <properties resource="history/jdbc-config.properties">
+  </properties>
+
+  <environments default="development">
+    <environment id="development">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="${mysql.driver}"/>
+        <property name="url" value="${mysql.url}"/>
+        <property name="username" value="${mysql.username}"/>
+        <property name="password" value="${mysql.password}"/>
+        <!--the follow tow lines is to resolve TransactionException about AutoCommit-->
+        <property name="poolPingQuery" value="select NOW()"/>
+        <property name="poolPingEnabled" value="true"/>
+      </dataSource>
+    </environment>
+  </environments>
+
+  <mappers>
+    <mapper resource="history/RecordMapper.xml"/>
+    <mapper resource="history/TestMapper.xml"/>
+  </mappers>
+</configuration>

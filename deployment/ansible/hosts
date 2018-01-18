@@ -1,0 +1,15 @@
+[rose_client_1]
+10.16.1.54
+
+[rose_client_2]
+10.16.1.59
+
+[sugar_slave_3]
+10.123.155.228
+
+[localhost]
+127.0.0.1
+
+[production]
+127.0.0.1
+

@@ -1,0 +1,5 @@
+---
+### Shut down search engine application from remote.
+
+- name: Shut down search engine.
+  command: sh /home/searcher/app/shutdown.sh

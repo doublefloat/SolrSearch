@@ -1,0 +1,11 @@
+---
+## Start up search engine application from remote.
+
+- hosts: all
+  strategy: debug
+  remote_user: root
+  connection: ssh
+
+  tasks:
+    - name: Start up search engine.
+      shell: /home/searcher/ops/startup.sh >> /tmp/search_engine_start_up_result

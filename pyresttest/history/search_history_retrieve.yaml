@@ -1,0 +1,51 @@
+---
+- config:
+  - testset: "Test of Solr Search History"
+  - variable_binds: {
+          SUCCESS: '200000',
+          ERROR: '200001',
+          INVALID: '200002',
+          PATH_RETRIEVE: "solr/history/retrieve",
+          }
+
+- test:
+  - group: "[History Retrieve]"
+  - name: "[Test 1]Request to retrieve history record"
+  - url: {template: "$PATH_RETRIEVE?userId=10101010"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+    - compare: {jsonpath_mini: "result.params", comparator: "type", expected: "map"}
+    - compare: {jsonpath_mini: "result.items", comparator: "type", expected: "list"}
+
+- test:
+  - group: "[History Retrieve]"
+  - name: "[Test 2]Request to retrieve history record with invalid userId"
+  - url: {template: "$PATH_RETRIEVE?userId=error-id"}
+  - method: "GET"
+  - expected_status: [400]
+
+
+- test:
+  - group: "[History Retrieve]"
+  - name: "[Test 3]Request to retrieve history record with optional parameters"
+  - url: {template: "$PATH_RETRIEVE?userId=10101010&offset=0&num=2&status=ACTIVE"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+
+
+- test:
+  - group: "[History Retrieve]"
+  - name: "[Test 4]Request to retrieve history record with invalid offset"
+  - url: {template: "$PATH_RETRIEVE?userId=10101010&offset=error-para&num=2&status=ACTIVE"}
+  - method: "GET"
+  - expected_status: [400]
+
+
+- test:
+  - group: "[History Retrieve]"
+  - name: "[Test 5]Request to retrieve history record with invalid offset"
+  - url: {template: "$PATH_RETRIEVE?userId=10101010&num=2&status=error-para"}
+  - method: "GET"
+  - expected_status: [400]

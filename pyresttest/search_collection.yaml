@@ -1,0 +1,87 @@
+---
+- config:
+    - testset: "Request of Solr Collection"
+    - variable_binds: {
+        SUCCESS: '200000',
+        ERROR: '200001',
+        INVALID: '200002',
+        PATH_COLLECTION_ALL: "/solr/search/collection",
+        PATH_COLLECTION_FIELDS: "/solr/search/collection/field",
+        PATH_COLLECTION_FIELD_DETAIL: "/solr/search/collection/field/detail",
+        PATH_COLLECTION_FIELD_STORED: "/solr/search/collection/field/stored",
+        COLLECTION: "log-production",
+        FIELD: "log_dt"
+        }
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 1]A request to get solr collections"
+  - url: {template: "$PATH_COLLECTION_ALL"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$SUCCESS"}}
+      - extract_test: {jsonpath_mini: "result", test: "exists"}
+      - extract_test: {jsonpath_mini: "result.items", test: "exists"}
+      - compare: {jsonpath_mini: "result.items", comparator: "type", expected: "list"}
+      - compare: {jsonpath_mini: "result.params", comparator: "type", expected: "map"}
+#      - extract_test: {jsonpath_mini: "result.numFound", test: "exists"}
+#      - compare: {jsonpath_mini: "result.numFound", comparator: "type", expected: "number"}
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 2]A request to get all fields of a solr collection"
+  - url: {template: "$PATH_COLLECTION_FIELDS?collection=$COLLECTION"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$SUCCESS"}}
+      - extract_test: {jsonpath_mini: "result", test: "exists"}
+      - extract_test: {jsonpath_mini: "result.items", test: "exists"}
+      - compare: {jsonpath_mini: "result.items", comparator: "type", expected: "list"}
+#      - extract_test: {jsonpath_mini: "result.numFound", test: "exists"}
+#      - compare: {jsonpath_mini: "result.numFound", comparator: "type", expected: "number"}
+#      - extract_test: {jsonpath_mini: "result.collectionName", test: "exists"}
+      - compare: {jsonpath_mini: "result.params.collection", comparator: "type", expected: "string"}
+#      - extract_test: {jsonpath_mini: "result.asc", test: "exists"}
+      - compare: {jsonpath_mini: "result.params.asc", comparator: "type", expected: "boolean"}
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 3]A bad request to get all fields of a non-exist collection"
+  - url: {template: "$PATH_COLLECTION_FIELDS?collection=collection-missed"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$ERROR"}}
+      - compare: {jsonpath_mini: "message", comparator: "type", expected: "string"}
+      - compare: {jsonpath_mini: "params.collection", comparator: "type", expected: "string"}
+      - compare: {jsonpath_mini: "params.asc", comparator: "type", expected: "boolean"}
+
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 4]A request to get facet information of a field"
+  - url: {template: "$PATH_COLLECTION_FIELD_DETAIL?collection=$COLLECTION&field=$FIELD"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$SUCCESS"}}
+      - extract_test: {jsonpath_mini: "result", test: "exists"}
+      - extract_test: {jsonpath_mini: "result.items", test: "exists"}
+      - compare: {jsonpath_mini: "result.items", comparator: "type", expected: "list"}
+      - compare: {jsonpath_mini: "result.params", comparator: "type", expected: "map"}
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 5]A request to get facet information of a non-exist field"
+  - url: {template: "$PATH_COLLECTION_FIELD_DETAIL?collection=$COLLECTION&field=$field-missed"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$ERROR"}}
+
+- test:
+  - group: "[Collection]"
+  - name: "[Test 6]A request to get stored fields"
+  - url: {template: "$PATH_COLLECTION_FIELD_STORED?collection=$COLLECTION"}
+  - method: "GET"
+  - validators:
+      - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$SUCCESS"}}
+
+

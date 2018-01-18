@@ -1,0 +1,31 @@
+---
+- config:
+  - testset: "Test of Solr Search History"
+  - variable_binds: {
+          SUCCESS: '200000',
+          ERROR: '200001',
+          INVALID: '200002',
+          PATH_UPDATE: "solr/history/update",
+          }
+
+- test:
+  - group: "[History Update]"
+  - name: "[Test 1]Request to update history record"
+  - url: {template: "$PATH_UPDATE"}
+  - method: "PUT"
+  - headers: {Content-Type: application/json}
+  - body: '{"id":1,"query":"*:*","searchName":"integration test","collection":"search"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+    - compare: {jsonpath_mini: "params", comparator: "type", expected: "map"}
+    - compare: {jsonpath_mini: "message", comparator: "type", expected: "string"}
+
+- test:
+  - group: "[History Update]"
+  - name: "[Test 2]Request to update history record field aggregateField"
+  - url: {template: "$PATH_UPDATE"}
+  - method: "PUT"
+  - headers: {Content-Type: application/json}
+  - body: '{"id":1,"aggregateField":"test"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}

@@ -1,0 +1,62 @@
+---
+## Initialize basic working directories including app, log, ops
+
+- name: Transfer startup.sh file
+  copy:
+    src: ../ops/startup.sh 
+    dest: /home/searcher/ops/startup.sh 
+    owner: searcher
+    group: searcher
+    mode: 0755
+
+- name: Transfer shutdown.sh file
+  copy:
+    src: ../ops/shutdown.sh 
+    dest: /home/searcher/ops/shutdown.sh 
+    owner: searcher
+    group: searcher
+    mode: 0755
+
+- name: Transfer restart.sh file
+  copy:
+    src: ../ops/restart.sh 
+    dest: /home/searcher/ops/restart.sh 
+    owner: searcher
+    group: searcher
+    mode: 0755
+
+- name: Test whether pid exist
+  stat:
+    path: /home/searcher/ops/pid
+  register: pid_exist
+
+- name: Transfer pid file if not exist
+  copy:
+    src: ../ops/pid
+    dest: /home/searcher/ops/pid
+    owner: searcher
+    group: searcher
+    mode: 0755
+  when: not pid_exist.stat.exists
+
+- name: Transfer search engine application file
+  copy:
+    src: ../app/hypers-search-engine-1.0.0-SNAPSHOT.jar
+    dest: /home/searcher/app/hypers-search-engine-1.0.0-SNAPSHOT.jar
+    owner: searcher
+    group: searcher
+    mode: 0755
+
+- name: Transfer jdk package
+  copy:
+    src: ../software/jdk-8u121-linux-x64.tar.gz
+    dest: /home/searcher/software/jdk-8u121-linux-x64.tar.gz
+    owner: searcher
+    group: searcher
+    mode: 0755
+
+- name: Extract jdk-8u121-linux-x64.tat.gz to /home/searcher/software/
+  unarchive:
+      src: /home/searcher/software/jdk-8u121-linux-x64.tar.gz
+      dest: /home/searcher/software
+      remote_src: yes

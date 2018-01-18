@@ -1,0 +1,27 @@
+---
+- config:
+  - testset: "Test of Solr Search History"
+  - variable_binds: {
+          SUCCESS: '200000',
+          ERROR: '200001',
+          INVALID: '200002',
+          PATH_DELETE: "solr/history/delete",
+          }
+
+- test:
+   - group: "[History Delete]"
+   - name: "[Test 1]Request to delete history record"
+   - url: {template: "$PATH_DELETE?id=1"}
+   - method: "GET"
+   - validators:
+     - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+     - compare: {jsonpath_mini: "params", comparator: "type", expected: "map"}
+     - compare: {jsonpath_mini: "message", comparator: "type", expected: "string"}
+
+- test:
+   - group: "[History Delete]"
+   - name: "[Test 1]Request to delete history record with invalid id"
+   - url: {template: "$PATH_DELETE?id=error-id"}
+   - method: "GET"
+   - expected_status: [400]
+

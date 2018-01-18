@@ -1,0 +1,167 @@
+---
+- config:
+    - testset: "Request of Solr Search"
+    - variable_binds: {
+        SUCCESS: '200000',
+        ERROR: '200001',
+        INVALID: '200002',
+        PATH: "/solr/search/request",
+        COLLECTION: "log-production",
+        AGGREGATE_FIELD: "log_dt",
+        VALUE_FIELD: "IP"
+        }
+    - generators:
+      - 'TIMERANGE': {type: "choice", values:["today","yesterday","lastday","thisweek","lastweek",
+          "thisyear","lastyear"]}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 1] A request to verify response format with code SUCCESS"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: "$SUCCESS"}}
+    - extract_test: {jsonpath_mini: "result", test: "exists"}
+#    - extract_test: {jsonpath_mini: "result.params", test: "exists"}
+    - compare: {jsonpath_mini: "result.params", comparator: "type", expected: "map"}
+    - extract_test: {jsonpath_mini: "result.items", test: "exists"}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 2] A request to test response format with code ERROR"
+  - url: {template: "$PATH?collection=collection-missed&query=*:*&aggregateField=$AGGREGATE_FIELD&timeRange=lastyear"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+    - extract_test: {jsonpath_mini: "params", test: "exists"}
+    - extract_test: {jsonpath_mini: "message", test: "exists"}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 3] A bad request with invalid parameter query"
+  - url: {template: "$PATH?collection=$COLLECTION&query=field-missed:hello&aggregateField=$AGGREGATE_FIELD&timeRange=lastyear"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+
+#- benchmark:
+#  - generator_binds: {timeRange: TIMERANGE}
+#  - group: "Request"
+#  - name: "A good request to test parameter timeRange"
+#  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange:$timeRange"}
+#  - method: "GET"
+#  - validators:
+#    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 4] A good request to test parameter timeRange"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+#    - compare: {jmespath: "length(result.items)", compartor: "ge", expected: 0}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 5] A bad request to test parameter timeRange"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&aggregateField=$AGGREGATION_FIELD&timeRange=err-time"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 6] A good request to test parameter filters"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&filters=$VALUE_FIELD:*&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 7] A bad request to test parameter filters"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&filters=field-missed:*&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 8] A good request to test parameter fields"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&fields=id&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+    # other fields shouldn't be exist
+    - extract_test: {jmespath: "result.items", test: "exists"}
+
+#- test:
+#  - group: "[Search Request]"
+#  - name: "[Test 9] A bad request to test parameter fields"
+#  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&fields=field-missed"}
+#  - method: "GET"
+#  - validators:
+#    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+#    # all other fields are null
+#    - compare: {jmespath: "result.items[0].id",compartor: "eq", expected: null}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 10] A good request to test parameter page"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&page=1000&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 11] A bad request to test parameter page"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&page=-1&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 12] A good request to test parameter pageSize"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&pageSize=10&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+#    - compare: {jmespath: "length(result.items)",compartor: "le", expected: 10}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 13] A good request to test parameter aggregateField"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 14] A bad request with invalid parameter aggregateField"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&aggregateField=field-missed"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$ERROR"}}
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 15] To test parameter filters with colons"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&filters=$VALUE_FIELD:v:1;$VALUE_FIELD:v2:&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+
+
+- test:
+  - group: "[Search Request]"
+  - name: "[Test 16] To test parameter filters with particular characters like '(' and ' '"
+  - url: {template: "$PATH?collection=$COLLECTION&query=*:*&timeRange=thisyear&filters=$VALUE_FIELD:(v):1;$VALUE_FIELD:v%202:&aggregateField=$AGGREGATE_FIELD"}
+  - method: "GET"
+  - validators:
+    - compare: {jsonpath_mini: "code",compartor: "str_eq", expected:{template: "$SUCCESS"}}
+

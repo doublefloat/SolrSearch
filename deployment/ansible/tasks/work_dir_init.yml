@@ -1,0 +1,34 @@
+---
+### Initialize basic working directories including app, log, ops
+
+- name: Create application module directory 
+  file:
+    path: /home/searcher/app
+    owner: searcher
+    group: searcher
+    mode: 0755
+    state: directory
+
+- name: Create log module directory
+  file:
+    path: /home/searcher/logs
+    owner: searcher
+    group: searcher
+    mode: 0755
+    state: directory
+
+- name: Create ops module directory
+  file:
+    path: /home/searcher/ops
+    owner: searcher
+    group: searcher
+    mode: 0755
+    state: directory
+
+- name: Create software module directory
+  file:
+    path: /home/searcher/software
+    owner: searcher
+    group: searcher
+    mode: 0755
+    state: directory

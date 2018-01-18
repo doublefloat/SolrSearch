@@ -1,0 +1,11 @@
+---
+## Create user searcher and allocate remote communicate, execute authorities.
+
+- hosts: all
+  user: root
+  connection: ssh
+
+  tasks:
+      - include: tasks/user_init.yml
+      - include: tasks/work_dir_init.yml
+      - include: tasks/file_transfer.yml

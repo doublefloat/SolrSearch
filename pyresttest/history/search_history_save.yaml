@@ -1,0 +1,77 @@
+---
+- config:
+  - testset: "Test of Solr Search History"
+  - variable_binds: {
+          SUCCESS: '200000',
+          ERROR: '200001',
+          INVALID: '200002',
+          PATH_SAVE: "solr/history/save",
+          }
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 1]Request to save history record"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"userId":10101010,"query":"*:*","searchName":"integration test","collection":"search"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+    - compare: {jsonpath_mini: "params", comparator: "type", expected: "map"}
+    - compare: {jsonpath_mini: "message", comparator: "type", expected: "string"}
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 2]Request to save history record without parameter userId"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"query":"*:*","searchName":"integration test","collection":"search"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$ERROR'}}
+    - compare: {jsonpath_mini: "params", comparator: "type", expected: "map"}
+    - compare: {jsonpath_mini: "message", comparator: "type", expected: "string"}
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 3]Request to save history record with invalid parameter userId"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"query":"*:*","userId":error-id,"searchName":"integration test","collection":"search"}'
+  - expected_status: [400]
+#  - validators:
+#    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$ERROR'}}
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 4]Request to save history record without parameter searchName"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"query":"*:*","userId":10101010,"collection":"search"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$ERROR'}}
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 5]Request to save history record without parameter collection"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"query":"*:*","userId":10101010,"searchName":"history save test"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$ERROR'}}
+
+- test:
+  - group: "[History Save]"
+  - name: "[Test 6]Request to save history record with optional parameters"
+  - url: {template: "$PATH_SAVE"}
+  - method: "POST"
+  - headers: {Content-Type: application/json}
+  - body: '{"userId":10101010,"query":"*:*","searchName":"integration test","collection":"search","timeType":"COMMON",
+          "timeRange":"thisyear","fields":"f1,f2","filters":"f1:v1 AND f2:v2","page":0,"pageSize":10,
+          "defaultSearch":false,"aggregateField":"field-test"}'
+  - validators:
+    - compare: {jsonpath_mini: "code", comparator: "str_eq", expected: {template: '$SUCCESS'}}
+
